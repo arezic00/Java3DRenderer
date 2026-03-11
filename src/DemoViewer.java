@@ -11,12 +11,12 @@ public class DemoViewer {
         pane.setLayout(new BorderLayout());
 
         // slider to control horizontal rotation
-        JSlider headingSlider = new JSlider(0, 360, 180);
-        pane.add(headingSlider, BorderLayout.SOUTH);
+        JSlider horizontalSlider = new JSlider(0, 360, 180);
+        pane.add(horizontalSlider, BorderLayout.SOUTH);
 
         // slider to control vertical rotation
-        JSlider pitchSlider = new JSlider(JSlider.VERTICAL, -90, 90, 0);
-        pane.add(pitchSlider, BorderLayout.EAST);
+        JSlider verticalSlider = new JSlider(JSlider.VERTICAL, -90, 90, 0);
+        pane.add(verticalSlider, BorderLayout.EAST);
 
         //panel to display render results
         JPanel renderPanel = new JPanel() {
@@ -45,18 +45,41 @@ public class DemoViewer {
                         new Vertex(-100, -100, 100),
                         Color.BLUE));
 
+                double yRotation = Math.toRadians(horizontalSlider.getValue());
+                Matrix3 yRotationMatrix = new Matrix3(new double[] {
+                   Math.cos(yRotation), 0, -Math.sin(yRotation),
+                   0, 1, 0,
+                   Math.sin(yRotation),0,Math.cos(yRotation)
+                });
+
+                double xRotation = Math.toRadians(verticalSlider.getValue());
+                Matrix3 xRotationMatrix = new Matrix3(new double[] {
+                        1, 0, 0,
+                        0, Math.cos(xRotation), Math.sin(xRotation),
+                        0, -Math.sin(xRotation), Math.cos(xRotation)
+                });
+
+                Matrix3 rotationMatrix = xRotationMatrix.multiply(yRotationMatrix);
+
                 g2.translate(getWidth() / 2, getHeight() / 2);
                 g2.setColor(Color.WHITE);
                 for (Triangle t : triangles) {
+                    Vertex v1 = rotationMatrix.transform(t.v1);
+                    Vertex v2 = rotationMatrix.transform(t.v2);
+                    Vertex v3 = rotationMatrix.transform(t.v3);
                     Path2D path = new Path2D.Double();
-                    path.moveTo(t.v1.x, t.v1.y);
-                    path.lineTo(t.v2.x, t.v2.y);
-                    path.lineTo(t.v3.x, t.v3.y);
+                    path.moveTo(v1.x, v1.y);
+                    path.lineTo(v2.x, v2.y);
+                    path.lineTo(v3.x, v3.y);
                     path.closePath();
                     g2.draw(path);
                 }
             }
         };
+
+        horizontalSlider.addChangeListener(e -> renderPanel.repaint());
+        verticalSlider.addChangeListener(e -> renderPanel.repaint());
+
         pane.add(renderPanel, BorderLayout.CENTER);
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
