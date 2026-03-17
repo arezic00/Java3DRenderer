@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -63,6 +64,9 @@ public class DemoViewer {
 
                 BufferedImage img = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
 
+                double[] zBuffer = new double[img.getWidth() * img.getHeight()];
+                Arrays.fill(zBuffer, Double.NEGATIVE_INFINITY);
+
                 for (Triangle t : triangles) {
                     Vertex v1 = rotationMatrix.transform(t.v1);
                     Vertex v2 = rotationMatrix.transform(t.v2);
@@ -88,8 +92,12 @@ public class DemoViewer {
                             double b1 = ((x - v3.x) * (v2.y - v3.y) - (v2.x - v3.x) * (y - v3.y)) / triangleArea;
                             double b2 = ((v1.x - v3.x) * (y - v3.y) - (x - v3.x) * (v1.y - v3.y)) / triangleArea;
                             double b3 = ((v1.x - x) * (v2.y - y) - (v2.x - x) * (v1.y - y)) / triangleArea;
-                            if (b1 >= 0 && b1 <= 1 && b2 >= 0 && b2 <= 1 && b3 >= 0 && b3 <= 1) {
+
+                            double depth = b1 * v1.z + b2 * v2.z + b3 * v3.z;
+                            int zIndex = y * img.getWidth() + x;
+                            if (b1 >= 0 && b1 <= 1 && b2 >= 0 && b2 <= 1 && b3 >= 0 && b3 <= 1 && depth > zBuffer[zIndex]) {
                                 img.setRGB(x, y, t.color.getRGB());
+                                zBuffer[zIndex] = depth;
                             }
                         }
                     }
