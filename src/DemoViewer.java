@@ -1,6 +1,5 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.ArrayList;
@@ -94,13 +93,6 @@ public class DemoViewer {
                             }
                         }
                     }
-
-                    /*Path2D path = new Path2D.Double();
-                    path.moveTo(v1.x, v1.y);
-                    path.lineTo(v2.x, v2.y);
-                    path.lineTo(v3.x, v3.y);
-                    path.closePath();
-                    g2.draw(path);*/
                 }
                 g2.drawImage(img, 0, 0, null);
             }
