@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
@@ -16,8 +17,20 @@ public class DemoViewer {
         pane.add(horizontalSlider, BorderLayout.SOUTH);
 
         // slider to control vertical rotation
-        JSlider verticalSlider = new JSlider(JSlider.VERTICAL, -90, 90, 0);
+        JSlider verticalSlider = new JSlider(JSlider.VERTICAL, -180, 180, 0);
         pane.add(verticalSlider, BorderLayout.EAST);
+
+        final List<Triangle> triangles;
+        List<Triangle> tempTriangles;
+        try {
+            tempTriangles = ObjLoader.loadObj("model.obj", Color.RED);
+            tempTriangles = ObjLoader.centerAndScale(tempTriangles,300);
+        } catch (IOException e) {
+            e.printStackTrace();
+            tempTriangles = new ArrayList<>();
+        }
+
+        triangles = tempTriangles;
 
         //panel to display render results
         JPanel renderPanel = new JPanel() {
@@ -26,30 +39,6 @@ public class DemoViewer {
                 Graphics2D g2 = (Graphics2D) g;
                 g2.setColor(Color.BLACK);
                 g2.fillRect(0,0, getWidth(), getHeight());
-
-                //A tetrahedron
-                List<Triangle> triangles = new ArrayList<>();
-                triangles.add(new Triangle(new Vertex(100, 100, 100),
-                        new Vertex(-100, -100, 100),
-                        new Vertex(-100, 100, -100),
-                        Color.WHITE));
-                triangles.add(new Triangle(new Vertex(100, 100, 100),
-                        new Vertex(-100, -100, 100),
-                        new Vertex(100, -100, -100),
-                        Color.RED));
-                triangles.add(new Triangle(new Vertex(-100, 100, -100),
-                        new Vertex(100, -100, -100),
-                        new Vertex(100, 100, 100),
-                        Color.GREEN));
-                triangles.add(new Triangle(new Vertex(-100, 100, -100),
-                        new Vertex(100, -100, -100),
-                        new Vertex(-100, -100, 100),
-                        Color.BLUE));
-
-                //Rounding by inflating
-                for (int i = 0; i <= 5; i++) {
-                    triangles = inflate(triangles);
-                }
 
                 double yRotation = Math.toRadians(horizontalSlider.getValue());
                 Matrix3 yRotationMatrix = new Matrix3(new double[] {
