@@ -68,11 +68,11 @@ public class DemoViewer {
                     Vertex v3 = rotationMatrix.transform(t.v3);
 
                     v1.x += (double) getWidth() / 2;
-                    v1.y += (double) getHeight() / 2;
+                    v1.y = -v1.y + (double) getHeight() / 2;
                     v2.x += (double) getWidth() / 2;
-                    v2.y += (double) getHeight() / 2;
+                    v2.y = -v2.y + (double) getHeight() / 2;
                     v3.x += (double) getWidth() / 2;
-                    v3.y += (double) getHeight() / 2;
+                    v3.y = -v3.y + (double) getHeight() / 2;
 
 
                     Vertex ab = new Vertex(
