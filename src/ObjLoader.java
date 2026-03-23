@@ -32,12 +32,6 @@ public class ObjLoader {
 
                 else if (line.startsWith("f ")) {
                     String[] parts = line.split("\\s+");
-
-                    // supports:
-                    // f 1 2 3
-                    // f 1/1/1 2/2/2 3/3/3
-                    // f 1//1 2//2 3//3
-                    // also triangulates quads/ngons with a fan
                     int[] faceVertexIndices = new int[parts.length - 1];
 
                     for (int i = 1; i < parts.length; i++) {
@@ -45,12 +39,9 @@ public class ObjLoader {
                         String[] subParts = token.split("/");
                         int vertexIndex = Integer.parseInt(subParts[0]);
 
-                        // OBJ is 1-based
                         faceVertexIndices[i - 1] = vertexIndex - 1;
                     }
 
-                    // triangulate polygon as fan:
-                    // (0,1,2), (0,2,3), (0,3,4), ...
                     for (int i = 1; i < faceVertexIndices.length - 1; i++) {
                         Vertex v1 = copy(vertices.get(faceVertexIndices[0]));
                         Vertex v2 = copy(vertices.get(faceVertexIndices[i]));

@@ -1,16 +1,27 @@
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 
 public class DemoViewer {
+
+    private static List<Triangle> triangles;
+
     public static void main(String[] args) {
         JFrame frame = new JFrame();
         Container pane = frame.getContentPane();
         pane.setLayout(new BorderLayout());
+
+        // Top panel for buttons
+        JPanel topPanel = new JPanel();
+        JButton openButton = new JButton("Open OBJ");
+        topPanel.add(openButton);
+        pane.add(topPanel, BorderLayout.NORTH);
 
         // slider to control horizontal rotation
         JSlider horizontalSlider = new JSlider(0, 360, 180);
@@ -20,17 +31,7 @@ public class DemoViewer {
         JSlider verticalSlider = new JSlider(JSlider.VERTICAL, -180, 180, 0);
         pane.add(verticalSlider, BorderLayout.EAST);
 
-        final List<Triangle> triangles;
-        List<Triangle> tempTriangles;
-        try {
-            tempTriangles = ObjLoader.loadObj("model.obj", Color.RED);
-            tempTriangles = ObjLoader.centerAndScale(tempTriangles,300);
-        } catch (IOException e) {
-            e.printStackTrace();
-            tempTriangles = new ArrayList<>();
-        }
-
-        triangles = tempTriangles;
+        triangles = makeDefaultTetrahedron();
 
         //panel to display render results
         JPanel renderPanel = new JPanel() {
@@ -102,7 +103,6 @@ public class DemoViewer {
 
                     int minX = (int) Math.max(0, Math.ceil(Math.min(v1.x, Math.min(v2.x, v3.x))));
                     int maxX = (int) Math.min(img.getWidth() - 1, Math.floor(Math.max(v1.x, Math.max(v2.x, v3.x))));
-
                     int minY = (int) Math.max(0, Math.ceil(Math.min(v1.y, Math.min(v2.y, v3.y))));
                     int maxY = (int) Math.min(img.getHeight() - 1, Math.floor(Math.max(v1.y, Math.max(v2.y, v3.y))));
 
@@ -116,6 +116,7 @@ public class DemoViewer {
 
                             double depth = b1 * v1.z + b2 * v2.z + b3 * v3.z;
                             int zIndex = y * img.getWidth() + x;
+
                             if (b1 >= 0 && b1 <= 1 && b2 >= 0 && b2 <= 1 && b3 >= 0 && b3 <= 1 && depth > zBuffer[zIndex]) {
                                 img.setRGB(x, y, getShade(t.color, angleCos).getRGB());
                                 zBuffer[zIndex] = depth;
@@ -128,13 +129,41 @@ public class DemoViewer {
             }
         };
 
+        openButton.addActionListener(e -> {
+            JFileChooser chooser = new JFileChooser();
+            chooser.setDialogTitle("Choose an OBJ file");
+            chooser.setFileFilter(new FileNameExtensionFilter("OBJ files", "obj"));
+
+            int result = chooser.showOpenDialog(frame);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = chooser.getSelectedFile();
+
+                try {
+                    List<Triangle> loaded = ObjLoader.loadObj(selectedFile.getPath(), Color.WHITE);
+                    loaded = ObjLoader.centerAndScale(loaded, 200.0);
+
+                    triangles = loaded;
+                    renderPanel.repaint();
+
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(
+                            frame,
+                            "Failed to load OBJ file:\n" + ex.getMessage(),
+                            "Load Error",
+                            JOptionPane.ERROR_MESSAGE
+                    );
+                }
+            }
+        });
+
         horizontalSlider.addChangeListener(e -> renderPanel.repaint());
         verticalSlider.addChangeListener(e -> renderPanel.repaint());
 
         pane.add(renderPanel, BorderLayout.CENTER);
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(400, 400);
+        frame.setSize(600, 600);
         frame.setVisible(true);
     }
 
@@ -174,4 +203,26 @@ public class DemoViewer {
         }
         return result;
     }
+
+    private static List<Triangle> makeDefaultTetrahedron() {
+        List<Triangle> tris = new ArrayList<>();
+        tris.add(new Triangle(new Vertex(100, 100, 100),
+                new Vertex(-100, -100, 100),
+                new Vertex(-100, 100, -100),
+                Color.WHITE));
+        tris.add(new Triangle(new Vertex(100, 100, 100),
+                new Vertex(-100, -100, 100),
+                new Vertex(100, -100, -100),
+                Color.RED));
+        tris.add(new Triangle(new Vertex(-100, 100, -100),
+                new Vertex(100, -100, -100),
+                new Vertex(100, 100, 100),
+                Color.GREEN));
+        tris.add(new Triangle(new Vertex(-100, 100, -100),
+                new Vertex(100, -100, -100),
+                new Vertex(-100, -100, 100),
+                Color.BLUE));
+        return tris;
+    }
+
 }
