@@ -12,6 +12,8 @@ public class DemoViewer {
     private static final int WINDOW_HEIGHT = 600;
     private static final double IMPORT_SCALE = 200.0;
 
+    private static final JFileChooser FILE_CHOOSER = createFileChooser();
+
     public static void main(String[] args) {
         JFrame frame = new JFrame();
         Container pane = frame.getContentPane();
@@ -115,16 +117,12 @@ public class DemoViewer {
     }
 
     private static void openObjFile(JFrame frame, RenderPanel renderPanel) {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle("Choose an OBJ file");
-        chooser.setFileFilter(new FileNameExtensionFilter("OBJ files", "obj"));
-
-        int result = chooser.showOpenDialog(frame);
+        int result = FILE_CHOOSER.showOpenDialog(frame);
         if (result != JFileChooser.APPROVE_OPTION) {
             return;
         }
 
-        File selectedFile = chooser.getSelectedFile();
+        File selectedFile = FILE_CHOOSER.getSelectedFile();
 
         try {
             List<Triangle> loaded = ObjLoader.loadObj(selectedFile.getPath(), Color.WHITE);
@@ -141,6 +139,13 @@ public class DemoViewer {
                     JOptionPane.ERROR_MESSAGE
             );
         }
+    }
+
+    private static JFileChooser createFileChooser() {
+        JFileChooser chooser = new JFileChooser(new File("models"));
+        chooser.setDialogTitle("Choose an OBJ file");
+        chooser.setFileFilter(new FileNameExtensionFilter("OBJ files", "obj"));
+        return chooser;
     }
 
 }
