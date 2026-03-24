@@ -14,8 +14,6 @@ public class DemoViewer {
     private static final int WINDOW_HEIGHT = 600;
     private static final double IMPORT_SCALE = 200.0;
 
-    private static List<Triangle> triangles;
-
     public static void main(String[] args) {
         JFrame frame = new JFrame();
         Container pane = frame.getContentPane();
@@ -35,39 +33,21 @@ public class DemoViewer {
         JSlider verticalSlider = new JSlider(JSlider.VERTICAL, -180, 180, 0);
         pane.add(verticalSlider, BorderLayout.EAST);
 
-        triangles = makeDefaultTetrahedron();
-
-        //panel to display render results
-        JPanel renderPanel = new JPanel() {
-            @Override
-            public void paintComponent(Graphics g) {
-                super.paintComponent(g);
-
-                Graphics2D g2 = (Graphics2D) g;
-                g2.setColor(Color.BLACK);
-                g2.fillRect(0,0, getWidth(), getHeight());
-
-                Matrix3 rotationMatrix = createRotationMatrix(
-                        horizontalSlider.getValue(),
-                        verticalSlider.getValue()
-                );
-
-                BufferedImage img = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
-
-                double[] zBuffer = new double[img.getWidth() * img.getHeight()];
-                Arrays.fill(zBuffer, Double.NEGATIVE_INFINITY);
-
-                for (Triangle t : triangles) {
-                    renderTriangle(img, zBuffer, t, rotationMatrix, getWidth(), getHeight());
-                }
-                g2.drawImage(img, 0, 0, null);
-            }
-        };
+        RenderPanel renderPanel = new RenderPanel();
+        renderPanel.setModel(makeDefaultTetrahedron());
+        renderPanel.setRotation(horizontalSlider.getValue(), verticalSlider.getValue());
 
         openButton.addActionListener(e -> openObjFile(frame, renderPanel));
 
-        horizontalSlider.addChangeListener(e -> renderPanel.repaint());
-        verticalSlider.addChangeListener(e -> renderPanel.repaint());
+        horizontalSlider.addChangeListener(e -> {
+            renderPanel.setRotation(horizontalSlider.getValue(), verticalSlider.getValue());
+            renderPanel.repaint();
+        });
+
+        verticalSlider.addChangeListener(e -> {
+            renderPanel.setRotation(horizontalSlider.getValue(), verticalSlider.getValue());
+            renderPanel.repaint();
+        });
 
         pane.add(renderPanel, BorderLayout.CENTER);
 
@@ -75,6 +55,44 @@ public class DemoViewer {
         frame.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+    }
+
+
+
+    private static class RenderPanel extends JPanel {
+        private List<Triangle> model = new ArrayList<>();
+        private double yRotationDegrees = 180;
+        private double xRotationDegrees = 0;
+
+        public void setModel(List<Triangle> model) {
+            this.model = model;
+        }
+
+        public void setRotation(double yRotationDegrees, double xRotationDegrees) {
+            this.yRotationDegrees = yRotationDegrees;
+            this.xRotationDegrees = xRotationDegrees;
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+
+            Graphics2D g2 = (Graphics2D) g;
+            g2.setColor(Color.BLACK);
+            g2.fillRect(0, 0, getWidth(), getHeight());
+
+            BufferedImage img = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+            double[] zBuffer = new double[img.getWidth() * img.getHeight()];
+            Arrays.fill(zBuffer, Double.NEGATIVE_INFINITY);
+
+            Matrix3 rotationMatrix = createRotationMatrix(yRotationDegrees, xRotationDegrees);
+
+            for (Triangle t : model) {
+                renderTriangle(img, zBuffer, t, rotationMatrix, getWidth(), getHeight());
+            }
+
+            g2.drawImage(img, 0, 0, null);
+        }
     }
 
     public static Color getShade(Color color, double shade) {
@@ -249,7 +267,7 @@ public class DemoViewer {
         }
     }
 
-    private static void openObjFile(JFrame frame, JPanel renderPanel) {
+    private static void openObjFile(JFrame frame, RenderPanel renderPanel) {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle("Choose an OBJ file");
         chooser.setFileFilter(new FileNameExtensionFilter("OBJ files", "obj"));
@@ -265,7 +283,7 @@ public class DemoViewer {
             List<Triangle> loaded = ObjLoader.loadObj(selectedFile.getPath(), Color.WHITE);
             loaded = ObjLoader.centerAndScale(loaded, IMPORT_SCALE);
 
-            triangles = loaded;
+            renderPanel.setModel(loaded);
             renderPanel.repaint();
         } catch (IOException ex) {
             ex.printStackTrace();
