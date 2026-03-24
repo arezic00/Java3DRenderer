@@ -73,6 +73,7 @@ public class DemoViewer {
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 
