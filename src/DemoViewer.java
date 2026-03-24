@@ -10,6 +10,10 @@ import java.util.ArrayList;
 
 public class DemoViewer {
 
+    private static final int WINDOW_WIDTH = 600;
+    private static final int WINDOW_HEIGHT = 600;
+    private static final double IMPORT_SCALE = 200.0;
+
     private static List<Triangle> triangles;
 
     public static void main(String[] args) {
@@ -68,7 +72,7 @@ public class DemoViewer {
         pane.add(renderPanel, BorderLayout.CENTER);
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(600, 600);
+        frame.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         frame.setVisible(true);
     }
 
@@ -258,7 +262,7 @@ public class DemoViewer {
 
         try {
             List<Triangle> loaded = ObjLoader.loadObj(selectedFile.getPath(), Color.WHITE);
-            loaded = ObjLoader.centerAndScale(loaded, 200.0);
+            loaded = ObjLoader.centerAndScale(loaded, IMPORT_SCALE);
 
             triangles = loaded;
             renderPanel.repaint();
