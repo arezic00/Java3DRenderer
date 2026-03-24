@@ -43,21 +43,7 @@ public class DemoViewer {
                 g2.setColor(Color.BLACK);
                 g2.fillRect(0,0, getWidth(), getHeight());
 
-                double yRotation = Math.toRadians(horizontalSlider.getValue());
-                Matrix3 yRotationMatrix = new Matrix3(new double[] {
-                   Math.cos(yRotation), 0, -Math.sin(yRotation),
-                   0, 1, 0,
-                   Math.sin(yRotation),0,Math.cos(yRotation)
-                });
-
-                double xRotation = Math.toRadians(verticalSlider.getValue());
-                Matrix3 xRotationMatrix = new Matrix3(new double[] {
-                        1, 0, 0,
-                        0, Math.cos(xRotation), Math.sin(xRotation),
-                        0, -Math.sin(xRotation), Math.cos(xRotation)
-                });
-
-                Matrix3 rotationMatrix = xRotationMatrix.multiply(yRotationMatrix);
+                Matrix3 rotationMatrix = createRotationMatrix(horizontalSlider, verticalSlider);
 
                 BufferedImage img = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
 
@@ -225,6 +211,24 @@ public class DemoViewer {
                 new Vertex(-100, -100, 100),
                 Color.BLUE));
         return tris;
+    }
+
+    private static Matrix3 createRotationMatrix(JSlider horizontalSlider, JSlider verticalSlider) {
+        double yRotation = Math.toRadians(horizontalSlider.getValue());
+        Matrix3 yRotationMatrix = new Matrix3(new double[] {
+                Math.cos(yRotation), 0, -Math.sin(yRotation),
+                0, 1, 0,
+                Math.sin(yRotation), 0, Math.cos(yRotation)
+        });
+
+        double xRotation = Math.toRadians(verticalSlider.getValue());
+        Matrix3 xRotationMatrix = new Matrix3(new double[] {
+                1, 0, 0,
+                0, Math.cos(xRotation), Math.sin(xRotation),
+                0, -Math.sin(xRotation), Math.cos(xRotation)
+        });
+
+        return xRotationMatrix.multiply(yRotationMatrix);
     }
 
 }
