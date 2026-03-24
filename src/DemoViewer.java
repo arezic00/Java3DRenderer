@@ -1,10 +1,8 @@
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -23,6 +21,8 @@ public class DemoViewer {
         JPanel topPanel = new JPanel();
         JButton openButton = new JButton("Open OBJ");
         topPanel.add(openButton);
+        JButton inflateButton = new JButton("Inflate");
+        topPanel.add(inflateButton);
         pane.add(topPanel, BorderLayout.NORTH);
 
         // slider to control horizontal rotation
@@ -38,6 +38,12 @@ public class DemoViewer {
         renderPanel.setRotation(horizontalSlider.getValue(), verticalSlider.getValue());
 
         openButton.addActionListener(e -> openObjFile(frame, renderPanel));
+
+        inflateButton.addActionListener(e -> {
+            List<Triangle> inflated = inflate(renderPanel.getModel());
+            renderPanel.setModel(inflated);
+            renderPanel.repaint();
+        });
 
         horizontalSlider.addChangeListener(e -> {
             renderPanel.setRotation(horizontalSlider.getValue(), verticalSlider.getValue());

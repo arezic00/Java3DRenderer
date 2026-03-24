@@ -114,7 +114,7 @@ public class RenderPanel extends JPanel {
         );
     }
 
-    private static Vertex calculateNormal(Vertex v1, Vertex v2, Vertex v3) {
+    private Vertex calculateNormal(Vertex v1, Vertex v2, Vertex v3) {
         Vertex ab = new Vertex(
                 v2.x - v1.x,
                 v2.y - v1.y,
@@ -149,7 +149,7 @@ public class RenderPanel extends JPanel {
         return (x - a.x) * (b.y - a.y) - (y - a.y) * (b.x - a.x);
     }
 
-    public Color getShade(Color color, double shade) {
+    private Color getShade(Color color, double shade) {
         double redLinear = Math.pow(color.getRed(), 2.4) * shade;
         double greenLinear = Math.pow(color.getGreen(), 2.4) * shade;
         double blueLinear = Math.pow(color.getBlue(), 2.4) * shade;
@@ -159,5 +159,9 @@ public class RenderPanel extends JPanel {
         int blue = (int) Math.pow(blueLinear, 1/2.4);
 
         return new Color(red, green, blue);
+    }
+
+    public List<Triangle> getModel() {
+        return model;
     }
 }
