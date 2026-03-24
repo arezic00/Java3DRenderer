@@ -22,33 +22,10 @@ public class ObjLoader {
                 }
 
                 if (line.startsWith("v ")) {
-                    String[] parts = line.split("\\s+");
-                    double x = Double.parseDouble(parts[1]);
-                    double y = Double.parseDouble(parts[2]);
-                    double z = Double.parseDouble(parts[3]);
-
-                    vertices.add(new Vertex(x, y, z));
-                }
-
-                else if (line.startsWith("f ")) {
-                    String[] parts = line.split("\\s+");
-                    int[] faceVertexIndices = new int[parts.length - 1];
-
-                    for (int i = 1; i < parts.length; i++) {
-                        String token = parts[i];
-                        String[] subParts = token.split("/");
-                        int vertexIndex = Integer.parseInt(subParts[0]);
-
-                        faceVertexIndices[i - 1] = vertexIndex - 1;
-                    }
-
-                    for (int i = 1; i < faceVertexIndices.length - 1; i++) {
-                        Vertex v1 = vertices.get(faceVertexIndices[0]).copy();
-                        Vertex v2 = vertices.get(faceVertexIndices[i]).copy();
-                        Vertex v3 = vertices.get(faceVertexIndices[i + 1]).copy();
-
-                        triangles.add(new Triangle(v1, v2, v3, color));
-                    }
+                    vertices.add(parseVertex(line));
+                } else if (line.startsWith("f ")) {
+                    int[] faceVertexIndices = parseFace(line);
+                    addTrianglesFromFace(vertices, triangles, faceVertexIndices, color);
                 }
             }
         }
@@ -56,19 +33,80 @@ public class ObjLoader {
         return triangles;
     }
 
+    private static Vertex parseVertex(String line) {
+        String[] parts = line.split("\\s+");
+        double x = Double.parseDouble(parts[1]);
+        double y = Double.parseDouble(parts[2]);
+        double z = Double.parseDouble(parts[3]);
+        return new Vertex(x, y, z);
+    }
+
+    private static int[] parseFace(String line) {
+        String[] parts = line.split("\\s+");
+        int[] faceVertexIndices = new int[parts.length - 1];
+
+        for (int i = 1; i < parts.length; i++) {
+            String[] subParts = parts[i].split("/");
+            int vertexIndex = Integer.parseInt(subParts[0]);
+            faceVertexIndices[i - 1] = vertexIndex - 1;
+        }
+
+        return faceVertexIndices;
+    }
+
+    private static void addTrianglesFromFace(
+            List<Vertex> vertices,
+            List<Triangle> triangles,
+            int[] faceVertexIndices,
+            Color color
+    ) {
+        if (faceVertexIndices.length < 3) {
+            return;
+        }
+
+        for (int i = 1; i < faceVertexIndices.length - 1; i++) {
+            int index1 = faceVertexIndices[0];
+            int index2 = faceVertexIndices[i];
+            int index3 = faceVertexIndices[i + 1];
+
+            if (!isValidVertexIndex(vertices, index1)
+                    || !isValidVertexIndex(vertices, index2)
+                    || !isValidVertexIndex(vertices, index3)) {
+                continue;
+            }
+
+            Vertex v1 = vertices.get(index1).copy();
+            Vertex v2 = vertices.get(index2).copy();
+            Vertex v3 = vertices.get(index3).copy();
+
+            triangles.add(new Triangle(v1, v2, v3, color));
+        }
+    }
+
+    private static boolean isValidVertexIndex(List<Vertex> vertices, int index) {
+        return index >= 0 && index < vertices.size();
+    }
+
     public static List<Triangle> centerAndScale(List<Triangle> tris, double scale) {
-        double minX = Double.POSITIVE_INFINITY, minY = Double.POSITIVE_INFINITY, minZ = Double.POSITIVE_INFINITY;
-        double maxX = Double.NEGATIVE_INFINITY, maxY = Double.NEGATIVE_INFINITY, maxZ = Double.NEGATIVE_INFINITY;
+        if (tris.isEmpty()) {
+            return tris;
+        }
+
+        double minX = Double.POSITIVE_INFINITY;
+        double minY = Double.POSITIVE_INFINITY;
+        double minZ = Double.POSITIVE_INFINITY;
+        double maxX = Double.NEGATIVE_INFINITY;
+        double maxY = Double.NEGATIVE_INFINITY;
+        double maxZ = Double.NEGATIVE_INFINITY;
 
         for (Triangle t : tris) {
-            for (Vertex v : new Vertex[]{t.v1, t.v2, t.v3}) {
-                minX = Math.min(minX, v.x);
-                minY = Math.min(minY, v.y);
-                minZ = Math.min(minZ, v.z);
-                maxX = Math.max(maxX, v.x);
-                maxY = Math.max(maxY, v.y);
-                maxZ = Math.max(maxZ, v.z);
-            }
+            minX = Math.min(minX, Math.min(t.v1.x, Math.min(t.v2.x, t.v3.x)));
+            minY = Math.min(minY, Math.min(t.v1.y, Math.min(t.v2.y, t.v3.y)));
+            minZ = Math.min(minZ, Math.min(t.v1.z, Math.min(t.v2.z, t.v3.z)));
+
+            maxX = Math.max(maxX, Math.max(t.v1.x, Math.max(t.v2.x, t.v3.x)));
+            maxY = Math.max(maxY, Math.max(t.v1.y, Math.max(t.v2.y, t.v3.y)));
+            maxZ = Math.max(maxZ, Math.max(t.v1.z, Math.max(t.v2.z, t.v3.z)));
         }
 
         double centerX = (minX + maxX) / 2.0;
@@ -80,9 +118,13 @@ public class ObjLoader {
         double sizeZ = maxZ - minZ;
         double maxSize = Math.max(sizeX, Math.max(sizeY, sizeZ));
 
+        if (maxSize == 0.0) {
+            return tris;
+        }
+
         double factor = scale / maxSize;
 
-        List<Triangle> result = new ArrayList<>();
+        List<Triangle> result = new ArrayList<>(tris.size());
         for (Triangle t : tris) {
             result.add(new Triangle(
                     new Vertex((t.v1.x - centerX) * factor, (t.v1.y - centerY) * factor, (t.v1.z - centerZ) * factor),
