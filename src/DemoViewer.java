@@ -59,31 +59,7 @@ public class DemoViewer {
                     v2 = toScreenSpace(v2, getWidth(), getHeight());
                     v3 = toScreenSpace(v3, getWidth(), getHeight());
 
-
-                    Vertex ab = new Vertex(
-                            v2.x - v1.x,
-                            v2.y - v1.y,
-                            v2.z - v1.z
-                    );
-
-                    Vertex ac = new Vertex(
-                            v3.x - v1.x,
-                            v3.y - v1.y,
-                            v3.z - v1.z
-                    );
-
-                    Vertex norm = new Vertex(
-                            ab.y * ac.z - ab.z * ac.y,
-                            ab.z * ac.x - ab.x * ac.z,
-                            ab.x * ac.y - ab.y * ac.x
-                    );
-
-                    double normLength = Math.sqrt(norm.x * norm.x + norm.y * norm.y + norm.z * norm.z);
-
-                    norm.x /= normLength;
-                    norm.y /= normLength;
-                    norm.z /= normLength;
-
+                    Vertex norm = calculateNormal(v1, v2, v3);
                     double angleCos = Math.abs(norm.z);
 
                     int minX = (int) Math.max(0, Math.ceil(Math.min(v1.x, Math.min(v2.x, v3.x))));
@@ -234,6 +210,37 @@ public class DemoViewer {
                 -vertex.y + height / 2.0,
                 vertex.z
         );
+    }
+
+    private static Vertex calculateNormal(Vertex v1, Vertex v2, Vertex v3) {
+        Vertex ab = new Vertex(
+                v2.x - v1.x,
+                v2.y - v1.y,
+                v2.z - v1.z
+        );
+
+        Vertex ac = new Vertex(
+                v3.x - v1.x,
+                v3.y - v1.y,
+                v3.z - v1.z
+        );
+
+        Vertex norm = new Vertex(
+                ab.y * ac.z - ab.z * ac.y,
+                ab.z * ac.x - ab.x * ac.z,
+                ab.x * ac.y - ab.y * ac.x
+        );
+
+        double normLength = Math.sqrt(norm.x * norm.x + norm.y * norm.y + norm.z * norm.z);
+        if (normLength == 0.0) {
+            return new Vertex(0, 0, 0);
+        }
+
+        norm.x /= normLength;
+        norm.y /= normLength;
+        norm.z /= normLength;
+
+        return norm;
     }
 
 }
