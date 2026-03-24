@@ -60,33 +60,7 @@ public class DemoViewer {
             }
         };
 
-        openButton.addActionListener(e -> {
-            JFileChooser chooser = new JFileChooser();
-            chooser.setDialogTitle("Choose an OBJ file");
-            chooser.setFileFilter(new FileNameExtensionFilter("OBJ files", "obj"));
-
-            int result = chooser.showOpenDialog(frame);
-            if (result == JFileChooser.APPROVE_OPTION) {
-                File selectedFile = chooser.getSelectedFile();
-
-                try {
-                    List<Triangle> loaded = ObjLoader.loadObj(selectedFile.getPath(), Color.WHITE);
-                    loaded = ObjLoader.centerAndScale(loaded, 200.0);
-
-                    triangles = loaded;
-                    renderPanel.repaint();
-
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                    JOptionPane.showMessageDialog(
-                            frame,
-                            "Failed to load OBJ file:\n" + ex.getMessage(),
-                            "Load Error",
-                            JOptionPane.ERROR_MESSAGE
-                    );
-                }
-            }
-        });
+        openButton.addActionListener(e -> openObjFile(frame, renderPanel));
 
         horizontalSlider.addChangeListener(e -> renderPanel.repaint());
         verticalSlider.addChangeListener(e -> renderPanel.repaint());
@@ -262,6 +236,35 @@ public class DemoViewer {
                     zBuffer[zIndex] = depth;
                 }
             }
+        }
+    }
+
+    private static void openObjFile(JFrame frame, JPanel renderPanel) {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Choose an OBJ file");
+        chooser.setFileFilter(new FileNameExtensionFilter("OBJ files", "obj"));
+
+        int result = chooser.showOpenDialog(frame);
+        if (result != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+
+        File selectedFile = chooser.getSelectedFile();
+
+        try {
+            List<Triangle> loaded = ObjLoader.loadObj(selectedFile.getPath(), Color.WHITE);
+            loaded = ObjLoader.centerAndScale(loaded, 200.0);
+
+            triangles = loaded;
+            renderPanel.repaint();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(
+                    frame,
+                    "Failed to load OBJ file:\n" + ex.getMessage(),
+                    "Load Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 
