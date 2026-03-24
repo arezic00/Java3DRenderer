@@ -18,9 +18,7 @@ This project renders `.obj` models without OpenGL or external graphics libraries
 
 ## Demo
 
-<p align="center">
-  <img src="assets/screenshot.png" width="581" alt="Demo of the Java software renderer">
-</p>
+![Demo](assets/screenshot.png)
 
 ## How it works
 
