@@ -43,7 +43,10 @@ public class DemoViewer {
                 g2.setColor(Color.BLACK);
                 g2.fillRect(0,0, getWidth(), getHeight());
 
-                Matrix3 rotationMatrix = createRotationMatrix(horizontalSlider, verticalSlider);
+                Matrix3 rotationMatrix = createRotationMatrix(
+                        horizontalSlider.getValue(),
+                        verticalSlider.getValue()
+                );
 
                 BufferedImage img = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
 
@@ -153,15 +156,15 @@ public class DemoViewer {
         return tris;
     }
 
-    private static Matrix3 createRotationMatrix(JSlider horizontalSlider, JSlider verticalSlider) {
-        double yRotation = Math.toRadians(horizontalSlider.getValue());
+    private static Matrix3 createRotationMatrix(double yRotationDegrees, double xRotationDegrees) {
+        double yRotation = Math.toRadians(yRotationDegrees);
         Matrix3 yRotationMatrix = new Matrix3(new double[] {
                 Math.cos(yRotation), 0, -Math.sin(yRotation),
                 0, 1, 0,
                 Math.sin(yRotation), 0, Math.cos(yRotation)
         });
 
-        double xRotation = Math.toRadians(verticalSlider.getValue());
+        double xRotation = Math.toRadians(xRotationDegrees);
         Matrix3 xRotationMatrix = new Matrix3(new double[] {
                 1, 0, 0,
                 0, Math.cos(xRotation), Math.sin(xRotation),
