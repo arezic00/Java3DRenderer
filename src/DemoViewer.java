@@ -15,7 +15,7 @@ public class DemoViewer {
     private static final JFileChooser FILE_CHOOSER = createFileChooser();
 
     public static void main(String[] args) {
-        JFrame frame = new JFrame();
+        JFrame frame = new JFrame("OBJ Viewer");
         Container pane = frame.getContentPane();
         pane.setLayout(new BorderLayout());
 
