@@ -43,9 +43,9 @@ public class ObjLoader {
                     }
 
                     for (int i = 1; i < faceVertexIndices.length - 1; i++) {
-                        Vertex v1 = copy(vertices.get(faceVertexIndices[0]));
-                        Vertex v2 = copy(vertices.get(faceVertexIndices[i]));
-                        Vertex v3 = copy(vertices.get(faceVertexIndices[i + 1]));
+                        Vertex v1 = vertices.get(faceVertexIndices[0]).copy();
+                        Vertex v2 = vertices.get(faceVertexIndices[i]).copy();
+                        Vertex v3 = vertices.get(faceVertexIndices[i + 1]).copy();
 
                         triangles.add(new Triangle(v1, v2, v3, color));
                     }
@@ -54,10 +54,6 @@ public class ObjLoader {
         }
 
         return triangles;
-    }
-
-    private static Vertex copy(Vertex v) {
-        return new Vertex(v.x, v.y, v.z);
     }
 
     public static List<Triangle> centerAndScale(List<Triangle> tris, double scale) {
