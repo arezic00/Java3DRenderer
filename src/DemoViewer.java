@@ -55,12 +55,9 @@ public class DemoViewer {
                     Vertex v2 = rotationMatrix.transform(t.v2);
                     Vertex v3 = rotationMatrix.transform(t.v3);
 
-                    v1.x += (double) getWidth() / 2;
-                    v1.y = -v1.y + (double) getHeight() / 2;
-                    v2.x += (double) getWidth() / 2;
-                    v2.y = -v2.y + (double) getHeight() / 2;
-                    v3.x += (double) getWidth() / 2;
-                    v3.y = -v3.y + (double) getHeight() / 2;
+                    v1 = toScreenSpace(v1, getWidth(), getHeight());
+                    v2 = toScreenSpace(v2, getWidth(), getHeight());
+                    v3 = toScreenSpace(v3, getWidth(), getHeight());
 
 
                     Vertex ab = new Vertex(
@@ -229,6 +226,14 @@ public class DemoViewer {
         });
 
         return xRotationMatrix.multiply(yRotationMatrix);
+    }
+
+    private static Vertex toScreenSpace(Vertex vertex, int width, int height) {
+        return new Vertex(
+                vertex.x + width / 2.0,
+                -vertex.y + height / 2.0,
+                vertex.z
+        );
     }
 
 }
