@@ -111,22 +111,27 @@ public class DemoViewer {
 
     private static List<Triangle> makeDefaultTetrahedron() {
         List<Triangle> tris = new ArrayList<>();
+
         tris.add(new Triangle(new Vertex(100, 100, 100),
                 new Vertex(-100, -100, 100),
                 new Vertex(-100, 100, -100),
                 Color.WHITE));
+
         tris.add(new Triangle(new Vertex(100, 100, 100),
                 new Vertex(-100, -100, 100),
                 new Vertex(100, -100, -100),
                 Color.RED));
+
         tris.add(new Triangle(new Vertex(-100, 100, -100),
                 new Vertex(100, -100, -100),
                 new Vertex(100, 100, 100),
                 Color.GREEN));
+
         tris.add(new Triangle(new Vertex(-100, 100, -100),
                 new Vertex(100, -100, -100),
                 new Vertex(-100, -100, 100),
                 Color.BLUE));
+
         return tris;
     }
 
