@@ -51,40 +51,7 @@ public class DemoViewer {
                 Arrays.fill(zBuffer, Double.NEGATIVE_INFINITY);
 
                 for (Triangle t : triangles) {
-                    Vertex v1 = rotationMatrix.transform(t.v1);
-                    Vertex v2 = rotationMatrix.transform(t.v2);
-                    Vertex v3 = rotationMatrix.transform(t.v3);
-
-                    v1 = toScreenSpace(v1, getWidth(), getHeight());
-                    v2 = toScreenSpace(v2, getWidth(), getHeight());
-                    v3 = toScreenSpace(v3, getWidth(), getHeight());
-
-                    Vertex norm = calculateNormal(v1, v2, v3);
-                    double angleCos = Math.abs(norm.z);
-
-                    int minX = (int) Math.max(0, Math.ceil(Math.min(v1.x, Math.min(v2.x, v3.x))));
-                    int maxX = (int) Math.min(img.getWidth() - 1, Math.floor(Math.max(v1.x, Math.max(v2.x, v3.x))));
-                    int minY = (int) Math.max(0, Math.ceil(Math.min(v1.y, Math.min(v2.y, v3.y))));
-                    int maxY = (int) Math.min(img.getHeight() - 1, Math.floor(Math.max(v1.y, Math.max(v2.y, v3.y))));
-
-                    double triangleArea = edgeFunction(v1, v2, v3.x, v3.y);
-
-                    for (int y = minY; y <= maxY; y++) {
-                        for (int x = minX; x <= maxX; x++) {
-                            double b1 = edgeFunction(v2, v3, x, y) / triangleArea;
-                            double b2 = edgeFunction(v3, v1, x, y) / triangleArea;
-                            double b3 = edgeFunction(v1, v2, x, y) / triangleArea;
-
-                            double depth = b1 * v1.z + b2 * v2.z + b3 * v3.z;
-                            int zIndex = y * img.getWidth() + x;
-
-                            if (b1 >= 0 && b1 <= 1 && b2 >= 0 && b2 <= 1 && b3 >= 0 && b3 <= 1 && depth > zBuffer[zIndex]) {
-                                img.setRGB(x, y, getShade(t.color, angleCos).getRGB());
-                                zBuffer[zIndex] = depth;
-                            }
-                        }
-                    }
-
+                    renderTriangle(img, zBuffer, t, rotationMatrix, getWidth(), getHeight());
                 }
                 g2.drawImage(img, 0, 0, null);
             }
@@ -245,6 +212,54 @@ public class DemoViewer {
 
     private static double edgeFunction(Vertex a, Vertex b, double x, double y) {
         return (x - a.x) * (b.y - a.y) - (y - a.y) * (b.x - a.x);
+    }
+
+    private static void renderTriangle(
+            BufferedImage img,
+            double[] zBuffer,
+            Triangle triangle,
+            Matrix3 rotationMatrix,
+            int panelWidth,
+            int panelHeight
+    ) {
+        Vertex v1 = rotationMatrix.transform(triangle.v1);
+        Vertex v2 = rotationMatrix.transform(triangle.v2);
+        Vertex v3 = rotationMatrix.transform(triangle.v3);
+
+        v1 = toScreenSpace(v1, panelWidth, panelHeight);
+        v2 = toScreenSpace(v2, panelWidth, panelHeight);
+        v3 = toScreenSpace(v3, panelWidth, panelHeight);
+
+        Vertex norm = calculateNormal(v1, v2, v3);
+        double angleCos = Math.abs(norm.z);
+
+        int minX = (int) Math.max(0, Math.ceil(Math.min(v1.x, Math.min(v2.x, v3.x))));
+        int maxX = (int) Math.min(img.getWidth() - 1, Math.floor(Math.max(v1.x, Math.max(v2.x, v3.x))));
+        int minY = (int) Math.max(0, Math.ceil(Math.min(v1.y, Math.min(v2.y, v3.y))));
+        int maxY = (int) Math.min(img.getHeight() - 1, Math.floor(Math.max(v1.y, Math.max(v2.y, v3.y))));
+
+        double triangleArea = edgeFunction(v1, v2, v3.x, v3.y);
+        if (triangleArea == 0.0) {
+            return;
+        }
+
+        int shadedRgb = getShade(triangle.color, angleCos).getRGB();
+
+        for (int y = minY; y <= maxY; y++) {
+            for (int x = minX; x <= maxX; x++) {
+                double b1 = edgeFunction(v2, v3, x, y) / triangleArea;
+                double b2 = edgeFunction(v3, v1, x, y) / triangleArea;
+                double b3 = edgeFunction(v1, v2, x, y) / triangleArea;
+
+                double depth = b1 * v1.z + b2 * v2.z + b3 * v3.z;
+                int zIndex = y * img.getWidth() + x;
+
+                if (b1 >= 0 && b1 <= 1 && b2 >= 0 && b2 <= 1 && b3 >= 0 && b3 <= 1 && depth > zBuffer[zIndex]) {
+                    img.setRGB(x, y, shadedRgb);
+                    zBuffer[zIndex] = depth;
+                }
+            }
+        }
     }
 
 }
