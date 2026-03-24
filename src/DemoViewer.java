@@ -67,13 +67,13 @@ public class DemoViewer {
                     int minY = (int) Math.max(0, Math.ceil(Math.min(v1.y, Math.min(v2.y, v3.y))));
                     int maxY = (int) Math.min(img.getHeight() - 1, Math.floor(Math.max(v1.y, Math.max(v2.y, v3.y))));
 
-                    double triangleArea = (v1.x - v3.x) * (v2.y - v3.y) - (v2.x - v3.x) * (v1.y - v3.y);
+                    double triangleArea = edgeFunction(v1, v2, v3.x, v3.y);
 
                     for (int y = minY; y <= maxY; y++) {
                         for (int x = minX; x <= maxX; x++) {
-                            double b1 = ((x - v3.x) * (v2.y - v3.y) - (v2.x - v3.x) * (y - v3.y)) / triangleArea;
-                            double b2 = ((v1.x - v3.x) * (y - v3.y) - (x - v3.x) * (v1.y - v3.y)) / triangleArea;
-                            double b3 = ((v1.x - x) * (v2.y - y) - (v2.x - x) * (v1.y - y)) / triangleArea;
+                            double b1 = edgeFunction(v2, v3, x, y) / triangleArea;
+                            double b2 = edgeFunction(v3, v1, x, y) / triangleArea;
+                            double b3 = edgeFunction(v1, v2, x, y) / triangleArea;
 
                             double depth = b1 * v1.z + b2 * v2.z + b3 * v3.z;
                             int zIndex = y * img.getWidth() + x;
@@ -241,6 +241,10 @@ public class DemoViewer {
         norm.z /= normLength;
 
         return norm;
+    }
+
+    private static double edgeFunction(Vertex a, Vertex b, double x, double y) {
+        return (x - a.x) * (b.y - a.y) - (y - a.y) * (b.x - a.x);
     }
 
 }
