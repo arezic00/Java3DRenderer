@@ -18,7 +18,7 @@ This project renders `.obj` models without OpenGL or external graphics libraries
 
 ## Demo
 
-![Demo](assets/screenshot.png)
+![Demo](assets/demo.gif)
 
 ## How it works
 
